@@ -54,7 +54,6 @@ A production-ready, enterprise-grade backend service template built with **Fasti
 ## API Explorer Previews
 
 Explore the REST API with Scalar at `/docs` and the GraphQL schema with GraphiQL at `/graphiql`.
-The REST preview is cropped to omit request and response payloads.
 
 ### REST API (Scalar)
 
