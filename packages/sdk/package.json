@@ -1,0 +1,23 @@
+{
+  "name": "@app/sdk",
+  "version": "1.0.0",
+  "description": "Framework-agnostic TypeScript API Client for Fastify Backend",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.17.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
