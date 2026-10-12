@@ -175,7 +175,7 @@ pnpm dev:worker
 
 ### Optional: S3-Compatible Object Storage
 
-The Compose stack does not run an object-storage service or create buckets. Local development uses local disk storage by default. To use Supabase Storage from the locally running API, create a bucket in Supabase and set the S3 credentials from your Supabase project in `.env`:
+The Compose stack does not run an object-storage service or create buckets. Local development uses local disk storage by default. To use s3 Storage from the locally running API, create a bucket in provider and set the S3 credentials from your s3 project in `.env`:
 
 ```dotenv
 STORAGE_DRIVER=s3
