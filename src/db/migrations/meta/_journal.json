@@ -8,6 +8,13 @@
       "when": 1791713433754,
       "tag": "0000_clumsy_thena",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791785829128,
+      "tag": "0001_supreme_christian_walker",
+      "breakpoints": true
     }
   ]
 }

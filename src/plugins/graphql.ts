@@ -25,6 +25,7 @@ import {
   createMaxDirectivesRule,
 } from '#src/graphql/rules/security.js';
 import { schema } from '#src/graphql/schema.js';
+import { graphqlRouteCompilers } from '#src/graphql/fastify-compilers.js';
 import { AppError } from '#src/lib/errors.js';
 import { createStorageProvider } from '#src/lib/storage/factory.js';
 import type { StorageProvider } from '#src/lib/storage/provider.js';
@@ -103,6 +104,7 @@ const graphqlPlugin: FastifyPluginAsync = async (app: FastifyInstance) => {
   await app.register(mercurius, {
     schema,
     path: '/graphql',
+    additionalRouteOptions: graphqlRouteCompilers,
     graphiql: env.NODE_ENV !== 'production' && env.GRAPHQL_PLAYGROUND_ENABLED,
     validationRules,
     ...(persistedQueries ? { persistedQueries } : {}),

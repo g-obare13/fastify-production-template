@@ -17,6 +17,9 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.758.0
         version: 3.1149.0
+      '@fastify/ajv-compiler':
+        specifier: 4.0.7
+        version: 4.0.7
       '@fastify/compress':
         specifier: ^8.0.1
         version: 8.3.1
@@ -29,6 +32,9 @@ importers:
       '@fastify/etag':
         specifier: ^6.2.1
         version: 6.2.1
+      '@fastify/fast-json-stringify-compiler':
+        specifier: 5.1.1
+        version: 5.1.1
       '@fastify/helmet':
         specifier: ^13.0.1
         version: 13.1.2

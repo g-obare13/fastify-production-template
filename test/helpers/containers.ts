@@ -1,5 +1,5 @@
 /**
- * @file Testcontainers helper utilities managing ephemeral Postgres, Redis, and MinIO test containers.
+ * @file Testcontainers helper utilities managing ephemeral Postgres and Redis test containers.
  * @module test/helpers/containers
  */
 
@@ -9,10 +9,8 @@ import { GenericContainer, type StartedTestContainer, Wait } from 'testcontainer
 export interface TestContainersSuite {
   postgres?: StartedTestContainer;
   redis?: StartedTestContainer;
-  minio?: StartedTestContainer;
   postgresUri?: string;
   redisUri?: string;
-  minioEndpoint?: string;
 }
 
 /**
@@ -77,37 +75,4 @@ export async function startRedisContainer(): Promise<{
   const connectionUri = `redis://${host}:${port}`;
 
   return { container, connectionUri };
-}
-
-/**
- * Starts a real MinIO S3-compatible container for storage testing.
- *
- * @returns Container instance, endpoint URL, credentials, and test bucket.
- */
-export async function startMinioContainer(): Promise<{
-  container: StartedTestContainer;
-  endpoint: string;
-  accessKey: string;
-  secretKey: string;
-  bucket: string;
-}> {
-  const accessKey = 'minioadmin';
-  const secretKey = 'minioadmin';
-  const bucket = 'test-uploads';
-
-  const container = await new GenericContainer('minio/minio:RELEASE.2024-01-18T22-51-28Z')
-    .withEnvironment({
-      MINIO_ROOT_USER: accessKey,
-      MINIO_ROOT_PASSWORD: secretKey,
-    })
-    .withCommand(['server', '/data'])
-    .withExposedPorts(9000)
-    .withWaitStrategy(Wait.forHttp('/minio/health/live', 9000))
-    .start();
-
-  const host = container.getHost();
-  const port = container.getMappedPort(9000);
-  const endpoint = `http://${host}:${port}`;
-
-  return { container, endpoint, accessKey, secretKey, bucket };
 }

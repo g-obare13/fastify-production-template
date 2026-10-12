@@ -14,6 +14,7 @@ A production-ready, enterprise-grade backend service template built with **Fasti
 
 ## Table of Contents
 - [Architecture & Tech Stack](#architecture--tech-stack)
+- [API Explorer Previews](#api-explorer-previews)
 - [Project Structure](#project-structure)
 - [Quick Start](#quick-start)
 - [Available Scripts & Codegen Workflow](#available-scripts--codegen-workflow)
@@ -44,9 +45,24 @@ A production-ready, enterprise-grade backend service template built with **Fasti
 - **Dual Transport:**
   - **REST:** OpenAPI 3.1 compliant endpoints with interactive Scalar documentation (`/docs`).
   - **GraphQL:** Mercurius code-first engine powered by Pothos, batched DataLoader N+1 prevention, Relay cursor pagination, and Armor security rules.
-- **Object Storage:** Pluggable S3-compatible provider (AWS S3, MinIO, Cloudflare R2) with direct-to-storage presigned uploads, server-side MIME sniffing, and local disk fallback.
+- **Object Storage:** Pluggable S3-compatible provider (Supabase Storage, AWS S3, MinIO, Cloudflare R2) with direct-to-storage presigned uploads, server-side MIME sniffing, and local disk fallback.
 - **Observability:** OpenTelemetry auto-instrumentation, Prometheus `/metrics` registry, structured Pino logging, and RFC-compliant liveness/readiness probes.
 - **Client SDK:** Framework-agnostic TypeScript client (`@app/sdk`) built on standard `fetch` with single-flight refresh mutex and RFC 9457 typed error handling.
+
+---
+
+## API Explorer Previews
+
+Explore the REST API with Scalar at `/docs` and the GraphQL schema with GraphiQL at `/graphiql`.
+The REST preview is cropped to omit request and response payloads.
+
+### REST API (Scalar)
+
+<img src="docs/images/rest-preview.jpeg" alt="Scalar REST API explorer showing the signup endpoint and a successful response" width="100%">
+
+### GraphQL (GraphiQL)
+
+<img src="docs/images/graphql.jpeg" alt="GraphiQL explorer showing the project's GraphQL schema" width="100%">
 
 ---
 
@@ -98,6 +114,7 @@ A production-ready, enterprise-grade backend service template built with **Fasti
 │   └── generate-sdk.ts        # Generates packages/sdk/src/schema.d.ts
 ├── docs/
 │   ├── adr/                   # Architecture Decision Records
+│   ├── images/                # REST and GraphQL API explorer screenshots
 │   └── env-reference.md       # Auto-generated environment variables reference
 ├── test/                      # Vitest test suites (REST, GraphQL, SDK, storage, jobs)
 ├── Dockerfile                 # Multi-stage production container
@@ -124,9 +141,17 @@ cp .env.example .env
 
 ### 3. Spin Up Infrastructure
 ```bash
-# Starts Postgres, Redis, MinIO, and Mailpit
-docker compose up -d postgres redis minio mailpit createbuckets
+# Use your locally installed PostgreSQL:
+docker compose up -d redis mailpit
+
+# Or use the Compose PostgreSQL container instead:
+# docker compose up -d postgres redis mailpit
 ```
+
+When running the `app` or `worker` Compose services, Compose reads `JWT_SECRET`,
+`COOKIE_SECRET`, and S3 settings from `.env`. The PostgreSQL container uses
+`POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` from `.env` when set;
+its fallback credentials are for local development only.
 
 ### 4. Database Setup
 ```bash
@@ -148,6 +173,24 @@ pnpm dev:worker
 - **Prometheus Metrics:** `http://localhost:3000/metrics`
 - **Kubernetes Liveness:** `http://localhost:3000/health/live`
 - **Kubernetes Readiness:** `http://localhost:3000/health/ready`
+
+### Optional: S3-Compatible Object Storage
+
+The Compose stack does not run an object-storage service or create buckets. Local development uses local disk storage by default. To use Supabase Storage from the locally running API, create a bucket in Supabase and set the S3 credentials from your Supabase project in `.env`:
+
+```dotenv
+STORAGE_DRIVER=s3
+S3_ENDPOINT=<your-project-s3-endpoint>
+S3_BUCKET=<your-storage-bucket>
+S3_REGION=us-east-1
+S3_ACCESS_KEY_ID=<your-s3-access-key>
+S3_SECRET_ACCESS_KEY=<your-s3-secret-key>
+S3_FORCE_PATH_STYLE=true
+```
+
+Keep the endpoint and credentials private; do not commit them. The Docker Compose `app` and `worker` services also read these S3 settings from `.env`, but you must run the provider and create its bucket separately.
+
+MinIO is optional and is not included in Compose. To use it, run a MinIO-compatible server separately and point the same S3 settings at it. MinIO AIStor requires a license; see the [AIStor container guide](https://docs.min.io/aistor/installation/container/install/).
 
 ---
 
