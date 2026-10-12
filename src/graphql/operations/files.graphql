@@ -1,0 +1,17 @@
+mutation RequestFileUpload($input: RequestFileUploadInput!) {
+  requestFileUpload(input: $input) {
+    fileId
+    uploadUrl
+    expiresAt
+  }
+}
+
+mutation ConfirmFileUpload($fileId: String!) {
+  confirmFileUpload(fileId: $fileId) {
+    id
+    key
+    status
+    mimeType
+    size
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "81febfe72e2a7fc70678f5176ef1b3a0167351b92aaf8078a00ebf568190f8b2": "mutation Login($email: String!, $password: String!) {\n  login(email: $email, password: $password) {\n    user {\n      id\n      email\n      role\n    }\n    accessToken\n  }\n}",
+  "Login": "mutation Login($email: String!, $password: String!) {\n  login(email: $email, password: $password) {\n    user {\n      id\n      email\n      role\n    }\n    accessToken\n  }\n}",
+  "7d8e966e6333d7fc440ad113551988fedcb7e8152ecbe91a8620a90739e4cd91": "query Me {\n  me {\n    id\n    email\n    role\n  }\n}",
+  "Me": "query Me {\n  me {\n    id\n    email\n    role\n  }\n}",
+  "694305f5d9bb901230e665815b8598a0244678f137c748541f078df43a534519": "mutation RequestFileUpload($input: RequestFileUploadInput!) {\n  requestFileUpload(input: $input) {\n    fileId\n    uploadUrl\n    expiresAt\n  }\n}",
+  "RequestFileUpload": "mutation RequestFileUpload($input: RequestFileUploadInput!) {\n  requestFileUpload(input: $input) {\n    fileId\n    uploadUrl\n    expiresAt\n  }\n}",
+  "baec225ac79e92fdb9d1107b97d684bed7bab302f2630159830ac15d5ae2ddb6": "mutation ConfirmFileUpload($fileId: String!) {\n  confirmFileUpload(fileId: $fileId) {\n    id\n    key\n    status\n    mimeType\n    size\n  }\n}",
+  "ConfirmFileUpload": "mutation ConfirmFileUpload($fileId: String!) {\n  confirmFileUpload(fileId: $fileId) {\n    id\n    key\n    status\n    mimeType\n    size\n  }\n}",
+  "4274286bfb7c136fab30d16fb71a144f0ae0291f1671b9ca2c44369e0c9afecc": "query GetUser($id: String!) {\n  user(id: $id) {\n    id\n    email\n    role\n  }\n}",
+  "GetUser": "query GetUser($id: String!) {\n  user(id: $id) {\n    id\n    email\n    role\n  }\n}",
+  "5b871ec80fca0633b9946993af2aa6fcaa2e03b51662d13434c557b69ab17ca2": "query UsersConnection($first: Int, $after: String) {\n  usersConnection(first: $first, after: $after) {\n    edges {\n      cursor\n      node {\n        id\n        email\n        role\n      }\n    }\n    pageInfo {\n      hasNextPage\n      hasPreviousPage\n      startCursor\n      endCursor\n    }\n    totalCount\n  }\n}",
+  "UsersConnection": "query UsersConnection($first: Int, $after: String) {\n  usersConnection(first: $first, after: $after) {\n    edges {\n      cursor\n      node {\n        id\n        email\n        role\n      }\n    }\n    pageInfo {\n      hasNextPage\n      hasPreviousPage\n      startCursor\n      endCursor\n    }\n    totalCount\n  }\n}"
+}

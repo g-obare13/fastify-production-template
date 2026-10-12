@@ -1,0 +1,27 @@
+query GetUser($id: String!) {
+  user(id: $id) {
+    id
+    email
+    role
+  }
+}
+
+query UsersConnection($first: Int, $after: String) {
+  usersConnection(first: $first, after: $after) {
+    edges {
+      cursor
+      node {
+        id
+        email
+        role
+      }
+    }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    totalCount
+  }
+}

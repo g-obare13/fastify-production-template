@@ -1,0 +1,237 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""Authentication token pair and user profile"""
+type AuthPayload {
+  """Signed JWT access token for Bearer authorization"""
+  accessToken: String!
+
+  """Access token expiration duration string (e.g. 15m)"""
+  expiresIn: String!
+
+  """Rotating refresh token for renewing access tokens"""
+  refreshToken: String
+
+  """Token type scheme (always Bearer)"""
+  tokenType: String!
+
+  """Authenticated user account profile"""
+  user: User!
+}
+
+"""Stored file object in storage provider"""
+type File {
+  """Timestamp when the file record was initialized (ISO 8601 UTC)"""
+  createdAt: String!
+
+  """Expiring presigned download URL for authorized callers"""
+  downloadUrl: String
+
+  """Unique file record identifier (ULID)"""
+  id: ID!
+
+  """Verified MIME type (verified via binary magic numbers)"""
+  mimeType: String!
+
+  """Original client filename upon upload"""
+  originalName: String!
+
+  """Owning user entity resolved in O(1) via DataLoader"""
+  owner: User
+
+  """Identifier of the user who uploaded the file"""
+  ownerId: String!
+
+  """File size in bytes"""
+  size: Int!
+
+  """File lifecycle state (pending, ready, deleted)"""
+  status: String!
+
+  """Timestamp when the file record was last updated (ISO 8601 UTC)"""
+  updatedAt: String!
+
+  """Access visibility control (private, public)"""
+  visibility: String!
+}
+
+"""Generic operation confirmation message"""
+type MessageResponse {
+  """Informational message describing operation outcome"""
+  message: String!
+
+  """True if the operation succeeded without errors"""
+  success: Boolean!
+}
+
+"""
+Root mutation operations for authentication, profile updates, and file uploads
+"""
+type Mutation {
+  """
+  Confirm direct upload completion and trigger server-side MIME sniffing verification
+  """
+  confirmFileUpload(
+    """Optional client-computed checksum for integrity validation"""
+    checksum: String
+
+    """Allocated file record identifier from presign step"""
+    fileId: String!
+  ): File!
+
+  """Authenticate an existing user account and issue token pair"""
+  login(
+    """Registered user email address"""
+    email: String!
+
+    """Account password"""
+    password: String!
+  ): AuthPayload!
+
+  """
+  Rotate a refresh token to generate a new access token and rotating refresh token
+  """
+  refreshToken(
+    """Current active refresh token"""
+    refreshToken: String!
+  ): AuthPayload!
+
+  """
+  Request an expiring presigned PUT URL for direct-to-storage file upload
+  """
+  requestFileUpload(
+    """Original filename with extension"""
+    filename: String!
+
+    """Declared MIME type (e.g. image/png)"""
+    mimeType: String!
+
+    """Expected file size in bytes"""
+    size: Int!
+
+    """Visibility setting (private or public)"""
+    visibility: String = "private"
+  ): PresignedUpload!
+
+  """Register a new user account with email and password credentials"""
+  signup(
+    """User email address"""
+    email: String!
+
+    """Plaintext password (minimum 8 characters)"""
+    password: String!
+  ): AuthPayload!
+
+  """Update public profile details of the currently authenticated user"""
+  updateUserProfile(
+    """New public avatar URL or null to clear"""
+    avatarUrl: String
+  ): User!
+}
+
+"""Pagination metadata conforming to Relay Connection specification"""
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
+
+"""Direct-to-storage presigned upload URL and descriptor"""
+type PresignedUpload {
+  """Validity duration of the upload URL in seconds"""
+  expiresIn: Int!
+
+  """Allocated file record identifier for upload confirmation"""
+  fileId: String!
+
+  """Storage provider object key"""
+  key: String!
+
+  """Direct HTTP PUT presigned S3 upload URL"""
+  uploadUrl: String!
+}
+
+"""Root query operations exposing user, file, and connection queries"""
+type Query {
+  """Fetch file metadata by unique file record ID"""
+  file(
+    """Target file ULID identifier"""
+    id: ID!
+  ): File
+
+  """List all files owned by the currently authenticated user"""
+  files: [File!]!
+
+  """
+  Fetch the currently authenticated user profile from session or bearer token
+  """
+  me: User
+
+  """Fetch an individual user profile by unique ID"""
+  user(
+    """Target user ULID identifier"""
+    id: ID!
+  ): User
+
+  """List users with keyset cursor pagination"""
+  users(
+    """Opaque base64 cursor token from previous page"""
+    cursor: String
+
+    """Maximum number of records to return (1-100)"""
+    limit: Int = 20
+  ): [User!]!
+
+  """Relay-compliant paginated connection of user accounts"""
+  usersConnection(after: String, before: String, first: Int, last: Int): QueryUsersConnection!
+}
+
+type QueryUsersConnection {
+  edges: [QueryUsersConnectionEdge!]!
+  pageInfo: PageInfo!
+}
+
+type QueryUsersConnectionEdge {
+  cursor: String!
+  node: User!
+}
+
+"""Root real-time subscription operations for live event streams"""
+type Subscription {
+  """
+  Real-time WebSocket event subscription emitted whenever user details are updated
+  """
+  userUpdated(
+    """Target user ULID identifier to observe"""
+    id: ID!
+  ): User!
+}
+
+"""Registered platform user account with profile information and roles"""
+type User {
+  """Optional public avatar image URL"""
+  avatarUrl: String
+
+  """Timestamp when the user account was created (ISO 8601 UTC)"""
+  createdAt: String!
+
+  """Primary verified email address of the user"""
+  email: String!
+
+  """Whether the user email address has been confirmed"""
+  emailVerified: Boolean!
+
+  """Files uploaded by this user, resolved in O(1) via DataLoader"""
+  files: [File!]!
+
+  """Unique user identifier (ULID)"""
+  id: ID!
+
+  """Role-based access level (e.g. user, admin)"""
+  role: String!
+
+  """Timestamp when the user account was last modified (ISO 8601 UTC)"""
+  updatedAt: String!
+}
