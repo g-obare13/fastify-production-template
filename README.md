@@ -58,7 +58,7 @@ The REST preview is cropped to omit request and response payloads.
 
 ### REST API (Scalar)
 
-<img src="docs/images/rest-preview.jpeg" alt="Scalar REST API explorer showing the signup endpoint and a successful response" width="100%">
+<img src="docs/images/rest.jpeg" alt="Scalar REST API explorer showing the signup endpoint and a successful response" width="100%">
 
 ### GraphQL (GraphiQL)
 
