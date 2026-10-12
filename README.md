@@ -221,6 +221,154 @@ The codebase strictly prevents schema, contract, and documentation drift.
 
 ---
 
+## Adding a REST Endpoint: Posts Example
+
+The module generator creates starter files, but it does not add a database
+table, implement a database repository, or register the new routes. This
+walkthrough shows the steps to make the generated Posts endpoints appear in
+Scalar and work with PostgreSQL.
+
+### 1. Generate the module
+
+```bash
+pnpm gen:module posts
+```
+
+Review the generated files under `src/modules/posts/`. The generated
+`schemas.ts` defines request and response validation. The generated
+`repository.ts` defines the `PostRepository` interface, and `routes.ts`
+exports `createPostsRoutes(repo)`. The repository interface is only a
+contract; it needs a database-backed implementation.
+
+For example, define the request schema in `src/modules/posts/schemas.ts` with
+Zod. Fastify uses it to validate the body and publish the request shape in
+OpenAPI:
+
+```ts
+export const createPostRequestSchema = z.object({
+  title: z.string().trim().min(1).max(255),
+  content: z.string().max(10_000).optional(),
+});
+```
+
+### 2. Add the Drizzle table
+
+In `src/db/schema.ts`, add a table definition. The following example stores a
+post's title and optional content, associates it with a user, and supports
+soft deletion:
+
+```ts
+export const posts = pgTable(
+  'posts',
+  {
+    id: varchar('id', { length: 36 }).primaryKey(),
+    title: varchar('title', { length: 255 }).notNull(),
+    content: text('content'),
+    userId: varchar('user_id', { length: 36 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('posts_user_id_idx').on(table.userId),
+    index('posts_deleted_at_idx').on(table.deletedAt),
+  ]
+);
+```
+
+Use the existing `pgTable`, `varchar`, `text`, `timestamp`, and `index`
+imports in that file. Then generate and apply a migration so the table exists
+in PostgreSQL:
+
+```bash
+pnpm db:generate
+pnpm db:migrate
+```
+
+### 3. Implement the repository
+
+In `src/modules/posts/repository.ts`, keep the generated interface and add a
+class that implements it using Drizzle. Import `Database` from
+`#src/db/client.js`, `posts` from `#src/db/schema.js`, and `and`, `eq`, and
+`isNull` from `drizzle-orm`.
+
+The repository class constructor stores the Drizzle client. For example,
+`findById` should select a post that has not been soft-deleted:
+
+```ts
+constructor(private readonly db: Database) {}
+
+async findById(id: string): Promise<PostRecord | null> {
+  const [post] = await this.db
+    .select()
+    .from(posts)
+    .where(and(eq(posts.id, id), isNull(posts.deletedAt)))
+    .limit(1);
+
+  return post ?? null;
+}
+```
+
+Implement the other interface methods in the same class with Drizzle
+`insert`, `update`, and `returning` queries. `create` inserts the post fields
+and returns the new row. `update` updates the supplied fields and
+`updatedAt`. `softDelete` sets `deletedAt` and `updatedAt`. Filter reads and
+writes by `deletedAt IS NULL` so deleted posts are not returned or changed.
+
+### 4. Build and register the route plugin
+
+The generated `createPostsRoutes(repo)` factory expects a repository. In
+`src/modules/posts/routes.ts`, add a Fastify plugin that creates the Drizzle
+repository from the database decorator and registers the generated routes:
+
+```ts
+import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import { DrizzlePostsRepository } from './repository.js';
+
+export const postsRoutes: FastifyPluginAsyncZod = async (app) => {
+  if (!app.db?.client) {
+    throw new Error('Database client must be registered before posts routes');
+  }
+
+  const repo = new DrizzlePostsRepository(app.db.client);
+  await app.register(createPostsRoutes(repo));
+};
+```
+
+Keep the existing `createPostsRoutes` export and add the `postsRoutes` plugin
+alongside it. In `src/app.ts`, import `postsRoutes` and register it with the
+other REST modules inside the `env.REST_ENABLED` block:
+
+```ts
+app.register(postsRoutes, { prefix: env.API_PREFIX });
+```
+
+The prefix defaults to `/v1`, so the generated routes will be
+`GET /v1/posts/:id` and `POST /v1/posts`. The POST route requires
+authentication; send a bearer access token in the `Authorization` header.
+
+### 5. Verify the endpoint and docs
+
+Restart the API after registering the route. Open `http://localhost:3000/docs`
+and look for the **Posts** tag. You can also inspect
+`http://localhost:3000/openapi.json`. The route's Fastify `schema` metadata
+provides the OpenAPI tag, summary, parameters, request body, and responses.
+
+Run the relevant checks after implementation:
+
+```bash
+pnpm typecheck
+pnpm test -- test/modules/posts.test.ts
+```
+
+Add route tests for the HTTP behavior as well as the generated service tests.
+If you add GraphQL fields for Posts, wire their resolvers to the same service
+and regenerate `schema.graphql` with `pnpm gen:schema`.
+
+---
+
 ## Dual API Surfaces (REST & GraphQL)
 
 Both REST and GraphQL interfaces share identical underlying business services, authentication decorators, and stable error codes (`RFC 9457` Problem Details):
