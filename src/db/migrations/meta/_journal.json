@@ -15,6 +15,13 @@
       "when": 1791785829128,
       "tag": "0001_supreme_christian_walker",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791791161250,
+      "tag": "0002_mysterious_nocturne",
+      "breakpoints": true
     }
   ]
 }

@@ -225,8 +225,8 @@ The codebase strictly prevents schema, contract, and documentation drift.
 
 The module generator creates starter files, but it does not add a database
 table, implement a database repository, or register the new routes. This
-walkthrough shows the steps to make the generated Posts endpoints appear in
-Scalar and work with PostgreSQL.
+walkthrough uses Posts as a working example of public and authenticated
+endpoints, validation, persistence, and ownership checks.
 
 ### 1. Generate the module
 
@@ -345,9 +345,48 @@ other REST modules inside the `env.REST_ENABLED` block:
 app.register(postsRoutes, { prefix: env.API_PREFIX });
 ```
 
-The prefix defaults to `/v1`, so the generated routes will be
-`GET /v1/posts/:id` and `POST /v1/posts`. The POST route requires
-authentication; send a bearer access token in the `Authorization` header.
+The prefix defaults to `/v1`. The Posts sample demonstrates this access
+pattern:
+
+| Method | Path | Access | Behavior |
+| --- | --- | --- | --- |
+| `GET` | `/v1/posts` | Public | List active posts with cursor pagination |
+| `GET` | `/v1/posts/{id}` | Public | Fetch one active post |
+| `POST` | `/v1/posts` | Authenticated | Create a post owned by the current user |
+| `PATCH` | `/v1/posts/{id}` | Author or admin | Edit a post |
+| `DELETE` | `/v1/posts/{id}` | Author or admin | Soft-delete a post |
+
+The public GET routes do not run the authentication pre-handler or declare
+OpenAPI security requirements. The mutating routes use
+`preHandler: [app.authenticate]` and `security: [{ bearerAuth: [] }]`, so
+Scalar prompts for a bearer access token. The service also checks ownership
+before edits and deletes: the authenticated author can manage their own post,
+and an admin can manage any post. This distinction is deliberate: route
+authentication proves who is calling; service authorization decides what
+that caller may do.
+
+Use **Try it** in Scalar to explore the public requests:
+
+```http
+GET http://localhost:3000/v1/posts?limit=10
+GET http://localhost:3000/v1/posts/{id}
+```
+
+After logging in, click **Authorize** in Scalar and provide the access token
+before trying `POST`, `PATCH`, or `DELETE`. For example, create a post with:
+
+```json
+{
+  "title": "My first post",
+  "content": "Created from the Posts example"
+}
+```
+
+Use the returned post ID to try `PATCH /v1/posts/{id}` with
+`{"title":"Updated title"}`, then `DELETE /v1/posts/{id}`. A user who is not
+the post's author gets `403 Forbidden` when trying to edit or delete it.
+Requests without a valid token get `401 Unauthorized`. Deletion is soft: the
+row remains in PostgreSQL, but public reads no longer return it.
 
 ### 5. Verify the endpoint and docs
 
@@ -363,7 +402,8 @@ pnpm typecheck
 pnpm test -- test/modules/posts.test.ts
 ```
 
-Add route tests for the HTTP behavior as well as the generated service tests.
+Add route tests for the HTTP behavior and OpenAPI security metadata, as well
+as service tests for ownership and business rules.
 If you add GraphQL fields for Posts, wire their resolvers to the same service
 and regenerate `schema.graphql` with `pnpm gen:schema`.
 

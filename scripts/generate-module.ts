@@ -247,8 +247,14 @@ export const ${singularPascal}Type = builder.objectRef<${singularPascal}Record>(
     title: t.exposeString('title'),
     content: t.exposeString('content', { nullable: true }),
     userId: t.exposeString('userId'),
-    createdAt: t.expose('createdAt', { type: 'Date' }),
-    updatedAt: t.expose('updatedAt', { type: 'Date' }),
+    createdAt: t.string({
+      description: 'Timestamp when the ${singularLower} was created (ISO 8601 UTC)',
+      resolve: (item) => item.createdAt.toISOString(),
+    }),
+    updatedAt: t.string({
+      description: 'Timestamp when the ${singularLower} was last modified (ISO 8601 UTC)',
+      resolve: (item) => item.updatedAt.toISOString(),
+    }),
   }),
 });
 

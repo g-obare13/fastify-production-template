@@ -152,6 +152,29 @@ export const apiKeys = pgTable(
   ]
 );
 
+
+/**
+ * Posts table storing post records.
+ */
+export const posts = pgTable(
+  'posts',
+  {
+    id: varchar('id', { length: 36 }).primaryKey(),
+    title: varchar('title', { length: 255 }).notNull(),
+    content: text('content'),
+    userId: varchar('user_id', { length: 36 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('posts_user_id_idx').on(table.userId),
+    index('posts_deleted_at_idx').on(table.deletedAt),
+  ]
+);
+
 /**
  * Relational navigation from users to associated tokens, files, and API keys.
  */

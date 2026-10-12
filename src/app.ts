@@ -18,6 +18,7 @@ import { generateId } from '#src/lib/id.js';
 import { authRoutes } from '#src/modules/auth/routes.js';
 import { filesRoutes } from '#src/modules/files/routes.js';
 import { healthRoutes } from '#src/modules/health/routes.js';
+import { postsRoutes } from '#src/modules/posts/routes.js';
 import { usersRoutes } from '#src/modules/users/routes.js';
 import { httpRequestDuration, httpRequestsTotal, register } from '#src/observability/metrics.js';
 import authPlugin from '#src/plugins/auth.js';
@@ -231,6 +232,7 @@ export function buildApp(options: AppOptions = {}) {
       app.register(authRoutes, { prefix: env.API_PREFIX });
       app.register(usersRoutes, { prefix: env.API_PREFIX });
       app.register(filesRoutes, { prefix: env.API_PREFIX });
+      app.register(postsRoutes, { prefix: env.API_PREFIX });
     }
 
     // Register GraphQL surface
